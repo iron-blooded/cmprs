@@ -19,12 +19,10 @@
             min-height: 100vh;
         }
         .content-container {
-            width: 80%;
-            max-width: 1000px;
             margin-top: 20px;
         }
         video, audio, img, iframe {
-            width: 100%;
+/*             width: 100%; */
             height: auto;
             max-height: 80vh;
             border: 1px solid #30363d;
@@ -52,10 +50,10 @@
         // Определяем поддерживаемые типы контента
         const mimeTypes = {
             // Видео
-            mp4: 'video/mp4',
             webm: 'video/webm',
             ogg: 'video/ogg',
             mov: 'video/quicktime',
+            mp4: 'video/mp4',
 
             // Аудио
             mp3: 'audio/mpeg',
@@ -98,11 +96,7 @@
             if (mimeType.startsWith('video/')) {
                 const video = document.createElement('video');
                 video.controls = true;
-                const source = document.createElement('source');
-                source.src = url;
-                source.type = mimeType;
-                video.appendChild(source);
-                video.innerHTML += 'Ваш браузер не поддерживает видео тег.';
+                video.src = url;
                 container.appendChild(video);
 
                 video.addEventListener('error', () => showError('Ошибка загрузки видео'));
@@ -111,10 +105,7 @@
             else if (mimeType.startsWith('audio/')) {
                 const audio = document.createElement('audio');
                 audio.controls = true;
-                const source = document.createElement('source');
-                source.src = url;
-                source.type = mimeType;
-                audio.appendChild(source);
+                audio.src = url;
                 audio.innerHTML += 'Ваш браузер не поддерживает аудио тег.';
                 container.appendChild(audio);
 
@@ -171,7 +162,7 @@
             }
         } else {
             showError('Не указан параметр URL. Пример использования: ' +
-                '<code>https://ваш-сайт/?url=https://example.com/file.jpg</code>');
+                '<code>https://localhost/?url=https://example.com/file.jpg</code>');
         }
     </script>
 </body>
