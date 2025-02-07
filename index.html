@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Video Player</title>
+    <style>
+        body {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin: 0;
+            padding: 20px;
+            background-color: #f0f0f0;
+            min-height: 100vh;
+        }
+        video {
+            width: 80%;
+            max-width: 800px;
+            margin-top: 20px;
+        }
+        .error {
+            color: red;
+            margin: 20px;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <h1>Video Player</h1>
+    <div id="player"></div>
+
+    <script>
+        // Получаем параметр из URL
+        const urlParams = new URLSearchParams(window.location.search);
+        const videoUrl = urlParams.get('url');
+
+        const playerContainer = document.getElementById('player');
+        
+        if (videoUrl) {
+            // Создаем видео элемент
+            const video = document.createElement('video');
+            video.controls = true;
+            video.style.backgroundColor = '#000';
+            
+            // Добавляем источник видео
+            const source = document.createElement('source');
+            source.src = videoUrl;
+            
+            // Пытаемся определить тип видео по расширению
+            const extension = videoUrl.split('.').pop().split(/#|\?/)[0];
+            const videoType = `video/${extension === 'mp4' ? 'mp4' : 
+                             extension === 'webm' ? 'webm' : 
+                             extension === 'ogg' ? 'ogg' : 'mp4'}`;
+            
+            source.type = videoType;
+            video.appendChild(source);
+            
+            // Добавляем сообщение для старых браузеров
+            video.innerHTML += 'Ваш браузер не поддерживает видео тег.';
+            
+            playerContainer.appendChild(video);
+        } else {
+            // Если параметр отсутствует
+            const error = document.createElement('div');
+            error.className = 'error';
+            error.textContent = 'Не указана ссылка на видео в параметре URL. Пример: ?url=https://example.com/video.mp4';
+            playerContainer.appendChild(error);
+        }
+    </script>
+    
+    <!-- Предупреждение о CORS -->
+    <div class="error">
+        Примечание: Видео может не загружаться из-за CORS-политики удаленного сервера.<br>
+        Для работы плеера сервер с видео должен разрешать кросс-доменные запросы.
+    </div>
+</body>
+</html>
