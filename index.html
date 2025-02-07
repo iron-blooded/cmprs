@@ -3,45 +3,83 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Video Player</title>
+    <title>Universal Content Viewer</title>
     <style>
+        #player {
+            display: flex;
+            justify-content: center;
+        }
         body {
             display: flex;
             flex-direction: column;
             align-items: center;
             margin: 0;
             padding: 20px;
-            background-color: #f0f0f0;
+            background-color: #0d1117;
             min-height: 100vh;
         }
-        video {
+        .content-container {
             width: 80%;
-            max-width: 800px;
+            max-width: 1000px;
             margin-top: 20px;
         }
+        video, audio, img, iframe {
+            width: 100%;
+            height: auto;
+            max-height: 80vh;
+            border: 1px solid #30363d;
+            border-radius: 6px;
+        }
         .error {
-            color: red;
+            color: #ff7b72;
             margin: 20px;
             text-align: center;
+            font-family: monospace;
+        }
+        .warning {
+            color: #e3b341;
+            margin: 20px;
+            padding: 15px;
+            border: 1px solid #30363d;
+            border-radius: 6px;
         }
     </style>
 </head>
 <body>
-    <h1>Video Player</h1>
     <div id="player"></div>
 
     <script>
-        // Новый способ извлечения URL с параметрами
-        function getVideoUrl() {
+        // Определяем поддерживаемые типы контента
+        const mimeTypes = {
+            // Видео
+            mp4: 'video/mp4',
+            webm: 'video/webm',
+            ogg: 'video/ogg',
+            mov: 'video/quicktime',
+
+            // Аудио
+            mp3: 'audio/mpeg',
+            wav: 'audio/wav',
+
+            // Изображения
+            jpg: 'image/jpeg',
+            jpeg: 'image/jpeg',
+            png: 'image/png',
+            gif: 'image/gif',
+            webp: 'image/webp',
+
+            // Документы
+            pdf: 'application/pdf',
+            txt: 'text/plain'
+        };
+
+        function getMediaUrl() {
             const search = window.location.search;
-            
-            // Регулярное выражение для поиска параметра url= с любыми символами до следующего &
             const urlMatch = search.match(/[?&]url=(.*)/);
-            
+
             if (!urlMatch) return null;
-            
+
             try {
-                // Двойное декодирование для случаев, когда URL уже был закодирован
                 return decodeURIComponent(urlMatch[1].replace(/\+/g, ' '));
             } catch(e) {
                 console.error('Error decoding URL:', e);
@@ -49,70 +87,92 @@
             }
         }
 
-        const videoUrl = getVideoUrl();
-        const playerContainer = document.getElementById('player');
+        function createMediaElement(url) {
+            const container = document.createElement('div');
+            container.className = 'content-container';
 
-        if (videoUrl) {
-            // Проверка валидности URL
-            try {
-                new URL(videoUrl);
-            } catch(e) {
-                const error = document.createElement('div');
-                error.className = 'error';
-                error.textContent = 'Некорректный формат URL видео';
-                playerContainer.appendChild(error);
-                throw e;
+            const extension = url.split('.').pop().split(/[#?]/)[0].toLowerCase();
+            const mimeType = mimeTypes[extension] || 'unknown';
+
+            // Создаем соответствующий элемент
+            if (mimeType.startsWith('video/')) {
+                const video = document.createElement('video');
+                video.controls = true;
+                const source = document.createElement('source');
+                source.src = url;
+                source.type = mimeType;
+                video.appendChild(source);
+                video.innerHTML += 'Ваш браузер не поддерживает видео тег.';
+                container.appendChild(video);
+
+                video.addEventListener('error', () => showError('Ошибка загрузки видео'));
+                return container;
             }
+            else if (mimeType.startsWith('audio/')) {
+                const audio = document.createElement('audio');
+                audio.controls = true;
+                const source = document.createElement('source');
+                source.src = url;
+                source.type = mimeType;
+                audio.appendChild(source);
+                audio.innerHTML += 'Ваш браузер не поддерживает аудио тег.';
+                container.appendChild(audio);
 
-            // Создание видео элемента (остальное без изменений)
-            const video = document.createElement('video');
-            video.controls = true;
-            video.style.backgroundColor = '#000';
-            
-            const source = document.createElement('source');
-            source.src = videoUrl;
-            
-            const extension = videoUrl.split('.').pop().split(/[#?]/)[0];
-            const videoType = `video/${
-                extension === 'mp4' ? 'mp4' :
-                extension === 'webm' ? 'webm' :
-                extension === 'ogg' ? 'ogg' : 'mp4'
-            }`;
-            
-            source.type = videoType;
-            video.appendChild(source);
-            
-            video.innerHTML += 'Ваш браузер не поддерживает видео тег.';
-            playerContainer.appendChild(video);
-            
-            // Обработчик ошибок загрузки видео
-            video.addEventListener('error', () => {
-                const error = document.createElement('div');
-                error.className = 'error';
-                error.textContent = 'Ошибка загрузки видео. Проверьте:';
-                error.innerHTML += '<ul>'
-                    + '<li>Корректность ссылки</li>'
-                    + '<li>Настройки CORS на сервере с видео</li>'
-                    + '<li>Формат видео (поддерживаются MP4, WebM, Ogg)</li>'
-                    + '</ul>';
-                playerContainer.appendChild(error);
-            });
-            
-        } else {
-            // Сообщение об отсутствии параметра
+                audio.addEventListener('error', () => showError('Ошибка загрузки аудио'));
+                return container;
+            }
+            else if (mimeType.startsWith('image/')) {
+                const img = document.createElement('img');
+                img.src = url;
+                img.alt = 'Загруженное изображение';
+                img.onerror = () => showError('Ошибка загрузки изображения');
+                container.appendChild(img);
+                return container;
+            }
+            else {
+                // Для неизвестных типов используем iframe
+                const iframe = document.createElement('iframe');
+                iframe.src = url;
+                iframe.sandbox = 'allow-scripts allow-same-origin';
+                iframe.loading = 'lazy';
+                container.appendChild(iframe);
+
+                const warning = document.createElement('div');
+                warning.className = 'warning';
+                warning.textContent = `⚠️ Контент типа ${mimeType} загружается во фрейме`;
+                container.appendChild(warning);
+
+                return container;
+            }
+        }
+
+        function showError(message) {
             const error = document.createElement('div');
             error.className = 'error';
-            error.innerHTML = 'Не указана ссылка на видео.<br>Пример использования:'
-                + '<code>https://ваш-сайт/?url=https://example.com/video.mp4?параметры</code>'
-                + '<br>Обязательно кодируйте специальные символы в URL!';
-            playerContainer.appendChild(error);
+            error.innerHTML = `${message}. Проверьте:<ul>
+                <li>Корректность ссылки</li>
+                <li>Настройки CORS на сервере</li>
+                <li>Формат контента</li>
+            </ul>`;
+            document.getElementById('player').appendChild(error);
+        }
+
+        // Инициализация
+        const mediaUrl = getMediaUrl();
+        const playerContainer = document.getElementById('player');
+
+        if (mediaUrl) {
+            try {
+                new URL(mediaUrl);
+                const mediaElement = createMediaElement(mediaUrl);
+                playerContainer.appendChild(mediaElement);
+            } catch(e) {
+                showError('Некорректный формат URL');
+            }
+        } else {
+            showError('Не указан параметр URL. Пример использования: ' +
+                '<code>https://ваш-сайт/?url=https://example.com/file.jpg</code>');
         }
     </script>
-    
-    <!-- Предупреждение о CORS -->
-    <div class="error">
-        Примечание: Видео может не загружаться из-за CORS-политики удаленного сервера.<br>
-        Для работы плеера сервер с видео должен разрешать кросс-доменные запросы.
-    </div>
 </body>
 </html>
