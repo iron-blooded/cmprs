@@ -36,7 +36,7 @@
             const search = window.location.search;
             
             // Регулярное выражение для поиска параметра url= с любыми символами до следующего &
-            const urlMatch = search.match(/[?&]url=([^&]*)/);
+            const urlMatch = search.match(/[?&]url=(.*)/);
             
             if (!urlMatch) return null;
             
