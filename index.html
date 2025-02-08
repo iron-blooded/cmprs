@@ -8,17 +8,34 @@
         body {
             display: flex;
             flex-direction: column;
-            align-items: center;
             margin: 0;
             padding: 20px;
             background-color: #0d1117;
             min-height: 100vh;
-            color: #c9d1d9;
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
         }
 
+        #header{
+            display: flex;
+            flex-direction: row;
+            justify-content: flex-start;
+        }
+
+        #header>a{
+            margin-right: 10px;
+            border: 1px solid #30363d;
+            border-radius: 6px;
+            padding: 10px;
+        }
+
+        #header>a, body, input[type="text"] {
+            color: #c9d1d9;
+            text-decoration: none;
+        }
+
         .container {
-            margin-top: 40px;
+            display: flex;
+            justify-content: center;
         }
 
         #input-section {
@@ -26,6 +43,8 @@
             flex-direction: column;
             gap: 15px;
             margin-bottom: 30px;
+            max-width: 50%;
+            align-items: center;
         }
 
         input[type="text"] {
@@ -33,9 +52,8 @@
             border: 1px solid #30363d;
             border-radius: 6px;
             background-color: #0d1117;
-            color: #c9d1d9;
             font-size: 16px;
-            width: 100%;
+            width: 20em;
         }
 
         button {
@@ -63,7 +81,10 @@
         }
 
         .content-container {
+            display: flex;
+            justify-content: center;
             margin-top: 20px;
+            flex-direction: column;
         }
 
         video, audio, img, iframe {
@@ -71,6 +92,15 @@
             max-height: 80vh;
             border: 1px solid #30363d;
             border-radius: 6px;
+        }
+
+        iframe {
+            height: 200vh;
+            width: 200vh;
+        }
+
+        audio {
+            width: 100vh;
         }
 
         .error {
@@ -91,6 +121,11 @@
     <script src="https://cdn.jsdelivr.net/npm/lz-string@1.4.4/libs/lz-string.min.js"></script>
 </head>
 <body>
+    <div id="header">
+        <a href=".">Главная (назад)</a>
+        <br>
+        <a href="https://t.me/Uabraham">Связаться</a>
+    </div>
     <div class="container">
         <div id="input-section">
             <input type="text" id="url-input" placeholder="Введите ссылку на контент...">
@@ -144,7 +179,7 @@
 
             const decompressed = decompressUrl(compressedUrl);
             if (!decompressed) {
-                showError('Ошибка распаковки ссылки');
+                showError('Ошибка распаковки ссылки', url);
                 return null;
             }
 
@@ -152,7 +187,7 @@
                 new URL(decompressed);
                 return decompressed;
             } catch(e) {
-                showError('Некорректный URL после распаковки');
+                showError('Некорректный URL после распаковки', url);
                 return null;
             }
         }
@@ -169,7 +204,7 @@
                 video.controls = true;
                 video.src = url;
                 container.appendChild(video);
-                video.addEventListener('error', () => showError('Ошибка загрузки видео'));
+                video.addEventListener('error', () => showError('Ошибка загрузки видео', url));
                 return container;
             }
             else if (mimeType.startsWith('audio/')) {
@@ -178,14 +213,14 @@
                 audio.src = url;
                 audio.innerHTML += 'Ваш браузер не поддерживает аудио тег.';
                 container.appendChild(audio);
-                audio.addEventListener('error', () => showError('Ошибка загрузки аудио'));
+                audio.addEventListener('error', () => showError('Ошибка загрузки аудио', url));
                 return container;
             }
             else if (mimeType.startsWith('image/')) {
                 const img = document.createElement('img');
                 img.src = url;
                 img.alt = 'Загруженное изображение';
-                img.onerror = () => showError('Ошибка загрузки изображения');
+                img.onerror = () => showError('Ошибка загрузки изображения', url);
                 container.appendChild(img);
                 return container;
             }
@@ -204,14 +239,16 @@
             }
         }
 
-        function showError(message) {
+        function showError(message, url) {
             const error = document.createElement('div');
             error.className = 'error';
             error.innerHTML = `${message}. Проверьте:<ul>
                 <li>Корректность ссылки</li>
                 <li>Настройки CORS на сервере</li>
                 <li>Формат контента</li>
-            </ul>`;
+                <li>Необходимость прокси для доступа к контенту (если ссылка из discord, например)</li>
+            </ul>
+            <a>Видео находится по ссылке: </a><a href="${url}">клик</a>`;
             document.getElementById('player').appendChild(error);
         }
 
@@ -251,7 +288,7 @@
 
         function copyToClipboard(text) {
             navigator.clipboard.writeText(text).then(() => {
-                alert('Ссылка скопирована в буфер обмена');
+                // alert('Ссылка скопирована в буфер обмена');
             }).catch(err => {
                 console.error('Ошибка копирования:', err);
             });
