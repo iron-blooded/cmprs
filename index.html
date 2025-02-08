@@ -117,6 +117,46 @@
             border: 1px solid #30363d;
             border-radius: 6px;
         }
+
+
+        .iframe-warning {
+            background-color: #161b22;
+            border: 1px solid #30363d;
+            border-radius: 6px;
+            padding: 20px;
+            margin: 20px 0;
+            text-align: center;
+        }
+
+        .iframe-buttons {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin-top: 15px;
+        }
+
+        .iframe-buttons button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: opacity 0.2s;
+        }
+
+        .iframe-buttons button:hover {
+            opacity: 0.8;
+        }
+
+        .block-scripts {
+            background-color: #238636;
+            color: white;
+        }
+
+        .allow-scripts {
+            background-color: #da3633;
+            color: white;
+        }
+
     </style>
     <script src="https://cdn.jsdelivr.net/npm/lz-string@1.4.4/libs/lz-string.min.js"></script>
 </head>
@@ -225,19 +265,55 @@
                 return container;
             }
             else {
-                const iframe = document.createElement('iframe');
-                iframe.src = url;
-                iframe.sandbox = 'allow-scripts allow-same-origin';
-                iframe.loading = 'lazy';
-                container.appendChild(iframe);
+                const warningContainer = document.createElement('div');
+                warningContainer.className = 'iframe-warning';
 
-                const warning = document.createElement('div');
-                warning.className = 'warning';
-                warning.textContent = `⚠️ Контент типа ${mimeType} загружается во фрейме`;
-                container.appendChild(warning);
+                const warningText = document.createElement('div');
+                warningText.className = 'warning';
+                warningText.textContent = `⚠️ Вы пытаетесь загрузить контент типа ${mimeType}, встраивающийся во фрейм (iframe). Выберите режим загрузки:`;
+                warningContainer.appendChild(warningText);
+
+                const buttonsContainer = document.createElement('div');
+                buttonsContainer.className = 'iframe-buttons';
+
+                const allowScriptsBtn = document.createElement('button');
+                allowScriptsBtn.className = 'allow-scripts';
+                allowScriptsBtn.textContent = 'Разрешить содержимому исполнять код';
+                allowScriptsBtn.onclick = () => createIframe(url, true);
+
+                const blockScriptsBtn = document.createElement('button');
+                blockScriptsBtn.className = 'block-scripts';
+                blockScriptsBtn.textContent = 'Запретить исполнять код (безопаснее)';
+                blockScriptsBtn.onclick = () => createIframe(url, false);
+
+                buttonsContainer.appendChild(allowScriptsBtn);
+                buttonsContainer.appendChild(blockScriptsBtn);
+                warningContainer.appendChild(buttonsContainer);
+                container.appendChild(warningContainer);
+
+                function createIframe(src, allowScripts) {
+                    // Удаляем кнопки выбора
+                    warningContainer.remove();
+
+                    const iframe = document.createElement('iframe');
+                    iframe.src = src;
+                    iframe.loading = 'lazy';
+
+                    if (allowScripts) {
+                        iframe.sandbox = 'allow-scripts allow-same-origin allow-forms allow-popups';
+                        iframe.title = 'Контент с разрешенными скриптами';
+                    } else {
+                        iframe.sandbox = 'allow-same-origin';
+                        iframe.title = 'Контент в безопасном режиме';
+                    }
+
+                    container.appendChild(iframe);
+                }
+
                 return container;
             }
         }
+
 
         function showError(message, url) {
             const error = document.createElement('div');
