@@ -1,45 +1,43 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ru">
 
 <head>
-    <link rel="icon" href="lain.png" type="image/png">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>URL Compressor</title>
+    <link rel="icon" href="lain.png" type="image/png">
     <style>
+        /* Стили для базовой разметки и оформления */
         body {
             display: flex;
             flex-direction: column;
             margin: 0;
             padding: 20px;
             background-color: #0d1117;
-            /*             min-height: 100vh; */
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            color: #c9d1d9;
         }
 
-        #header {
+        header nav {
             display: flex;
-            flex-direction: row;
-            justify-content: flex-start;
+            gap: 10px;
+            margin-bottom: 20px;
         }
 
-        #header>a {
-            margin-right: 10px;
+        header nav a {
+            padding: 10px;
             border: 1px solid #30363d;
             border-radius: 6px;
-            padding: 10px;
-        }
-
-        #header>a,
-        body,
-        input[type="text"] {
-            color: #c9d1d9;
             text-decoration: none;
+            color: inherit;
         }
 
-        .container {
+        .container,
+        main,
+        .url-section {
             display: flex;
-            justify-content: center;
+            flex-direction: column;
+            align-items: center;
         }
 
         #input-section {
@@ -48,16 +46,19 @@
             gap: 15px;
             margin-bottom: 30px;
             max-width: 50%;
+            width: 100%;
             align-items: center;
         }
 
         input[type="text"] {
             padding: 12px;
+            margin: 10px 0 10px 0;
             border: 1px solid #30363d;
             border-radius: 6px;
             background-color: #0d1117;
             font-size: 16px;
-            width: 20em;
+            width: 100%;
+            color: #c9d1d9;
         }
 
         button {
@@ -65,7 +66,7 @@
             background-color: #238636;
             border: none;
             border-radius: 6px;
-            color: white;
+            color: #fff;
             cursor: pointer;
             font-size: 16px;
             transition: background-color 0.2s;
@@ -82,13 +83,15 @@
             border: 1px solid #30363d;
             border-radius: 6px;
             display: none;
+            flex-direction: column;
+            align-items: center;
         }
 
         .content-container {
             display: flex;
-            justify-content: center;
-            margin-top: 20px;
             flex-direction: column;
+            align-items: center;
+            margin-top: 20px;
         }
 
         video,
@@ -125,7 +128,6 @@
             border-radius: 6px;
         }
 
-
         .iframe-warning {
             background-color: #161b22;
             border: 1px solid #30363d;
@@ -156,27 +158,27 @@
 
         .block-scripts {
             background-color: #238636;
-            color: white;
+            color: #fff;
         }
 
         .allow-scripts {
             background-color: #da3633;
-            color: white;
+            color: #fff;
         }
 
         .upload-section {
-            margin: 20px 0;
             padding: 20px;
             border: 1px solid #30363d;
             border-radius: 6px;
             text-align: center;
+            width: 100%;
         }
 
         .upload-box {
             border: 2px dashed #30363d;
             border-radius: 6px;
-            padding: 30px;
-            margin: 20px 0;
+            padding: 20px;
+            margin: 10px 0;
             cursor: pointer;
             transition: border-color 0.3s;
         }
@@ -185,13 +187,8 @@
             border-color: #238636;
         }
 
-        .upload-box input[type="file"] {
-            display: none;
-        }
-
         .upload-status {
             margin-top: 10px;
-            color: #c9d1d9;
         }
 
         .loader {
@@ -206,140 +203,26 @@
         }
 
         @keyframes spin {
-            0% {
+            from {
                 transform: rotate(0deg);
             }
 
-            100% {
+            to {
                 transform: rotate(360deg);
             }
         }
-    </style>
-    <script src="https://cdn.jsdelivr.net/npm/lz-string@1.4.4/libs/lz-string.min.js"></script>
-</head>
 
-<body>
-    <div id="header">
-        <a href=".">Главная (назад)</a>
-        <br>
-        <a href="https://t.me/Uabraham">Связаться</a>
-    </div>
-    <div class="container">
-        <div id="input-section">
-            <!-- Секция загрузки файлов -->
-            <div class="upload-section">
-                <h2 style="margin: 0;">Вы можете загрузить файл на 1 час</h2>
-                <div class="upload-box" onclick="document.getElementById('file-input').click()">
-                    Перетащите файл сюда или кликните для выбора
-                </div>
-                <input type="file" id="file-input">
-                <button onclick="uploadFile()" class="upload-button">Загрузить файл</button>
-                <div class="upload-status" id="upload-status"></div>
-                <div class="loader" id="loader"></div>
-            </div>
-            <h3 style="margin: 0;">Или использовать ссылку на уже существующий файл</h3>
-            <!-- Форма для ссылок -->
-            <input type="text" id="url-input" placeholder="Введите ссылку на контент...">
-            <button onclick="processUrl()">Сжать ссылку</button>
-            <div id="result"></div>
-        </div>
-        <div id="player"></div>
-    </div>
-
-    <script>
-        document.addEventListener('paste', (event) => {
-            const items = event.clipboardData.items;
-            for (let item of items) {
-                if (item.kind === 'file') {
-                    const file = item.getAsFile();
-                    if (file) {
-                        const fileInput = document.getElementById('file-input');
-                        const dataTransfer = new DataTransfer();
-                        dataTransfer.items.add(file);
-                        fileInput.files = dataTransfer.files;
-                        uploadFile();
-                    }
-                }
-            }
-        });
-        async function uploadFile() {
-            const fileInput = document.getElementById('file-input');
-            const status = document.getElementById('upload-status');
-            const loader = document.getElementById('loader');
-
-            if (!fileInput.files[0]) {
-                status.innerHTML = '⚠️ Пожалуйста, выберите файл';
-                return;
-            }
-
-            const formData = new FormData();
-            formData.append('file', fileInput.files[0]);
-
-            try {
-                loader.style.display = 'block';
-                status.innerHTML = 'Загрузка файла...';
-
-                const response = await fetch('https://tmpfiles.org/api/v1/upload', {
-                    method: 'POST',
-                    body: formData
-                });
-
-                if (!response.ok) throw new Error('Ошибка загрузки');
-
-                const data = await response.json();
-
-                if (!data.data?.url) {
-                    throw new Error('Некорректный ответ сервера');
-                }
-
-                // Сжимаем полученную ссылку
-                const compressed = compressUrl(data.data.url.replace("tmpfiles.org/", "tmpfiles.org/dl/"));
-                if (!compressed) {
-                    throw new Error('Ошибка сжатия ссылки');
-                }
-
-                const currentOrigin = window.location.origin + window.location.pathname;
-                const compressedUrl = `${currentOrigin}?url=${compressed}`;
-
-                // Показываем результат
-                document.getElementById('result').innerHTML = `
-                    Сжатая ссылка: <br>
-                    <a href="${compressedUrl}" target="_blank">${compressedUrl}</a>
-                    <button onclick="copyToClipboard('${compressedUrl}')" style="margin-left:10px">Копировать</button>
-                `;
-                document.getElementById('result').style.display = 'block';
-
-                status.innerHTML = '✅ Файл успешно загружен!';
-
-            } catch (error) {
-                console.error('Upload error:', error);
-                status.innerHTML = `❌ Ошибка загрузки: ${error.message}`;
-            } finally {
-                loader.style.display = 'none';
-                fileInput.value = '';
-            }
+        h3 {
+            margin-block-start: 0.1em;
+            margin-block-end: 0.1em;
         }
+    </style>
+    <!-- Подключаем библиотеку для сжатия/распаковки URL -->
+    <script defer src="https://cdn.jsdelivr.net/npm/lz-string@1.4.4/libs/lz-string.min.js"></script>
+    <script defer>
+        /*********************** JavaScript *************************/
 
-        // Обработчик перетаскивания файлов
-        document.addEventListener('DOMContentLoaded', () => {
-            const dropZone = document.querySelector('.upload-box');
-
-            dropZone.addEventListener('dragover', (e) => {
-                e.preventDefault();
-                dropZone.style.borderColor = '#238636';
-            });
-
-            dropZone.addEventListener('dragleave', () => {
-                dropZone.style.borderColor = '#30363d';
-            });
-
-            dropZone.addEventListener('drop', (e) => {
-                e.preventDefault();
-                dropZone.style.borderColor = '#30363d';
-                const file = e.dataTransfer.files[0];
-                document.getElementById('file-input').files = e.dataTransfer.files;
-            });
-        });
+        // Объект сопоставления расширений и MIME-типов
         const mimeTypes = {
             webm: 'video/webm',
             ogg: 'video/ogg',
@@ -356,145 +239,111 @@
             txt: 'text/plain'
         };
 
-        function compressUrl(url) {
+        // Сжатие URL с помощью LZString
+        const compressUrl = url => {
             try {
-                const compressed = LZString.compressToEncodedURIComponent(url);
-                return compressed;
-            } catch (e) {
-                console.error('Compression error:', e);
+                return LZString.compressToEncodedURIComponent(url);
+            } catch (error) {
+                console.error('Ошибка сжатия URL:', error);
                 return null;
             }
-        }
+        };
 
-        function decompressUrl(compressed) {
+        // Распаковка URL с помощью LZString
+        const decompressUrl = compressed => {
             try {
                 return LZString.decompressFromEncodedURIComponent(compressed);
-            } catch (e) {
-                console.error('Decompression error:', e);
+            } catch (error) {
+                console.error('Ошибка распаковки URL:', error);
                 return null;
             }
-        }
+        };
 
-        function getMediaUrl() {
-            const params = new URLSearchParams(window.location.search);
-            const compressedUrl = params.get('url');
-
-            if (!compressedUrl) return null;
-
-            const decompressed = decompressUrl(compressedUrl);
-            if (!decompressed) {
-                showError('Ошибка распаковки ссылки', url);
-                return null;
+        // Обработка события вставки (paste) для файлов
+        const handlePaste = event => {
+            const items = event.clipboardData.items;
+            for (const item of items) {
+                if (item.kind === 'file') {
+                    const file = item.getAsFile();
+                    if (file) {
+                        const fileInput = document.getElementById('file-input');
+                        const dataTransfer = new DataTransfer();
+                        dataTransfer.items.add(file);
+                        fileInput.files = dataTransfer.files;
+                        uploadFile();
+                    }
+                }
             }
+        };
+
+        // Функция загрузки файла
+        const uploadFile = async () => {
+            const fileInput = document.getElementById('file-input');
+            const status = document.getElementById('upload-status');
+            const loader = document.getElementById('loader');
+
+            if (!fileInput.files[0]) {
+                status.textContent = '⚠️ Пожалуйста, выберите файл';
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append('file', fileInput.files[0]);
 
             try {
-                new URL(decompressed);
-                return decompressed;
-            } catch (e) {
-                showError('Некорректный URL после распаковки', url);
-                return null;
-            }
-        }
+                loader.style.display = 'block';
+                status.textContent = 'Загрузка файла...';
 
-        function createMediaElement(url) {
-            const container = document.createElement('div');
-            container.className = 'content-container';
+                const response = await fetch('https://tmpfiles.org/api/v1/upload', {
+                    method: 'POST',
+                    body: formData
+                });
 
-            const extension = url.split('.').pop().split(/[#?]/)[0].toLowerCase();
-            const mimeType = mimeTypes[extension] || 'unknown';
-
-            if (mimeType.startsWith('video/')) {
-                const video = document.createElement('video');
-                video.controls = true;
-                video.src = url;
-                container.appendChild(video);
-                video.addEventListener('error', () => showError('Ошибка загрузки видео', url));
-                return container;
-            }
-            else if (mimeType.startsWith('audio/')) {
-                const audio = document.createElement('audio');
-                audio.controls = true;
-                audio.src = url;
-                audio.innerHTML += 'Ваш браузер не поддерживает аудио тег.';
-                container.appendChild(audio);
-                audio.addEventListener('error', () => showError('Ошибка загрузки аудио', url));
-                return container;
-            }
-            else if (mimeType.startsWith('image/')) {
-                const img = document.createElement('img');
-                img.src = url;
-                img.alt = 'Загруженное изображение';
-                img.onerror = () => showError('Ошибка загрузки изображения', url);
-                container.appendChild(img);
-                return container;
-            }
-            else {
-                const warningContainer = document.createElement('div');
-                warningContainer.className = 'iframe-warning';
-
-                const warningText = document.createElement('div');
-                warningText.className = 'warning';
-                warningText.textContent = `⚠️ Вы пытаетесь загрузить контент типа ${mimeType}, встраивающийся во фрейм (iframe). Выберите режим загрузки:`;
-                warningContainer.appendChild(warningText);
-
-                const buttonsContainer = document.createElement('div');
-                buttonsContainer.className = 'iframe-buttons';
-
-                const allowScriptsBtn = document.createElement('button');
-                allowScriptsBtn.className = 'allow-scripts';
-                allowScriptsBtn.textContent = 'Разрешить содержимому исполнять код';
-                allowScriptsBtn.onclick = () => createIframe(url, true);
-
-                const blockScriptsBtn = document.createElement('button');
-                blockScriptsBtn.className = 'block-scripts';
-                blockScriptsBtn.textContent = 'Запретить исполнять код (безопаснее)';
-                blockScriptsBtn.onclick = () => createIframe(url, false);
-
-                buttonsContainer.appendChild(allowScriptsBtn);
-                buttonsContainer.appendChild(blockScriptsBtn);
-                warningContainer.appendChild(buttonsContainer);
-                container.appendChild(warningContainer);
-
-                function createIframe(src, allowScripts) {
-                    // Удаляем кнопки выбора
-                    warningContainer.remove();
-
-                    const iframe = document.createElement('iframe');
-                    iframe.src = src;
-                    iframe.loading = 'lazy';
-
-                    if (allowScripts) {
-                        iframe.sandbox = 'allow-scripts allow-same-origin allow-forms allow-popups';
-                        iframe.title = 'Контент с разрешенными скриптами';
-                    } else {
-                        iframe.sandbox = 'allow-same-origin';
-                        iframe.title = 'Контент в безопасном режиме';
-                    }
-
-                    container.appendChild(iframe);
+                if (!response.ok) {
+                    throw new Error('Ошибка загрузки');
                 }
 
-                return container;
+                const data = await response.json();
+                if (!data.data?.url) {
+                    throw new Error('Некорректный ответ сервера');
+                }
+
+                // Корректируем и сжимаем полученную ссылку
+                const fileUrl = data.data.url.replace("tmpfiles.org/", "tmpfiles.org/dl/");
+                const compressed = compressUrl(fileUrl);
+                if (!compressed) {
+                    throw new Error('Ошибка сжатия ссылки');
+                }
+
+                const currentOrigin = window.location.origin + window.location.pathname;
+                const compressedUrl = `${currentOrigin}?url=${compressed}`;
+
+                displayResult(compressedUrl);
+                status.textContent = '✅ Файл успешно загружен!';
+            } catch (error) {
+                console.error('Ошибка загрузки файла:', error);
+                status.textContent = `❌ Ошибка загрузки: ${error.message}`;
+            } finally {
+                loader.style.display = 'none';
+                fileInput.value = '';
             }
-        }
+        };
 
-
-        function showError(message, url) {
-            const error = document.createElement('div');
-            error.className = 'error';
-            error.innerHTML = `${message}. Проверьте:<ul>
-                <li>Корректность ссылки</li>
-                <li>Настройки CORS на сервере</li>
-                <li>Формат контента</li>
-                <li>Необходимость прокси для доступа к контенту (если ссылка из discord, например)</li>
-            </ul>
-            <a>Видео находится по ссылке: </a><a href="${url}">клик</a>`;
-            document.getElementById('player').appendChild(error);
-        }
-
-        function processUrl() {
-            const input = document.getElementById('url-input');
+        // Отображение результата (сжатая ссылка) в блоке #result
+        const displayResult = url => {
             const resultDiv = document.getElementById('result');
+            resultDiv.innerHTML = `
+        <h3>Сжатая ссылка</h3>
+        <a href="${url}" target="_blank">${url}</a>
+        <button id="copy-btn" style="margin-left:10px">Копировать</button>
+      `;
+            resultDiv.style.display = 'flex';
+            document.getElementById('copy-btn').addEventListener('click', () => copyToClipboard(url));
+        };
+
+        // Обработка ввода URL пользователем
+        const processUrl = () => {
+            const input = document.getElementById('url-input');
             const url = input.value.trim();
 
             if (!url) {
@@ -504,7 +353,7 @@
 
             try {
                 new URL(url);
-            } catch (e) {
+            } catch (error) {
                 alert('Некорректный URL');
                 return;
             }
@@ -517,36 +366,210 @@
 
             const currentOrigin = window.location.origin + window.location.pathname;
             const compressedUrl = `${currentOrigin}?url=${compressed}`;
+            displayResult(compressedUrl);
+        };
 
-            resultDiv.innerHTML = `
-                Сжатая ссылка: <br>
-                <a href="${compressedUrl}" target="_blank">${compressedUrl}</a>
-                <button onclick="copyToClipboard('${compressedUrl}')" style="margin-left:10px">Копировать</button>
-            `;
-            resultDiv.style.display = 'block';
-        }
-
-        function copyToClipboard(text) {
-            navigator.clipboard.writeText(text).then(() => {
-                // alert('Ссылка скопирована в буфер обмена');
-            }).catch(err => {
-                console.error('Ошибка копирования:', err);
+        // Функция копирования текста в буфер обмена
+        const copyToClipboard = text => {
+            navigator.clipboard.writeText(text).catch(error => {
+                console.error('Ошибка копирования:', error);
             });
-        }
+        };
 
-        // Инициализация
-        const mediaUrl = getMediaUrl();
-        const playerContainer = document.getElementById('player');
-        const inputSection = document.getElementById('input-section');
+        // Получение URL медиа из параметров запроса
+        const getMediaUrl = () => {
+            const params = new URLSearchParams(window.location.search);
+            const compressedUrl = params.get('url');
+            if (!compressedUrl) return null;
 
-        if (mediaUrl) {
-            inputSection.style.display = 'none';
-            const mediaElement = createMediaElement(mediaUrl);
-            playerContainer.appendChild(mediaElement);
-        } else {
-            playerContainer.style.display = 'none';
-        }
+            const decompressed = decompressUrl(compressedUrl);
+            if (!decompressed) {
+                showError('Ошибка распаковки ссылки', decompressed);
+                return null;
+            }
+
+            try {
+                new URL(decompressed);
+                return decompressed;
+            } catch (error) {
+                showError('Некорректный URL после распаковки', decompressed);
+                return null;
+            }
+        };
+
+        // Создание элемента для отображения медиа-контента
+        const createMediaElement = url => {
+            const container = document.createElement('div');
+            container.className = 'content-container';
+
+            const extension = url.split('.').pop().split(/[#?]/)[0].toLowerCase();
+            const mimeType = mimeTypes[extension] || 'unknown';
+
+            if (mimeType.startsWith('video/')) {
+                const video = document.createElement('video');
+                video.controls = true;
+                video.src = url;
+                video.addEventListener('error', () => showError('Ошибка загрузки видео', url));
+                container.appendChild(video);
+            } else if (mimeType.startsWith('audio/')) {
+                const audio = document.createElement('audio');
+                audio.controls = true;
+                audio.src = url;
+                audio.textContent = 'Ваш браузер не поддерживает аудио тег.';
+                audio.addEventListener('error', () => showError('Ошибка загрузки аудио', url));
+                container.appendChild(audio);
+            } else if (mimeType.startsWith('image/')) {
+                const img = document.createElement('img');
+                img.src = url;
+                img.alt = 'Загруженное изображение';
+                img.onerror = () => showError('Ошибка загрузки изображения', url);
+                container.appendChild(img);
+            } else {
+                // Если контент не подходит для стандартных тегов – предлагаем выбор режима отображения через iframe
+                const warningContainer = document.createElement('div');
+                warningContainer.className = 'iframe-warning';
+
+                const warningText = document.createElement('div');
+                warningText.className = 'warning';
+                warningText.textContent = `⚠️ Вы пытаетесь загрузить контент типа ${mimeType}, который будет встроен через iframe. Выберите режим загрузки:`;
+                warningContainer.appendChild(warningText);
+
+                const buttonsContainer = document.createElement('div');
+                buttonsContainer.className = 'iframe-buttons';
+
+                const allowScriptsBtn = document.createElement('button');
+                allowScriptsBtn.className = 'allow-scripts';
+                allowScriptsBtn.textContent = 'Разрешить скрипты';
+                allowScriptsBtn.addEventListener('click', () =>
+                    createIframe(url, true, container, warningContainer)
+                );
+
+                const blockScriptsBtn = document.createElement('button');
+                blockScriptsBtn.className = 'block-scripts';
+                blockScriptsBtn.textContent = 'Запретить скрипты';
+                blockScriptsBtn.addEventListener('click', () =>
+                    createIframe(url, false, container, warningContainer)
+                );
+
+                buttonsContainer.appendChild(allowScriptsBtn);
+                buttonsContainer.appendChild(blockScriptsBtn);
+                warningContainer.appendChild(buttonsContainer);
+                container.appendChild(warningContainer);
+            }
+            return container;
+        };
+
+        // Создание iframe с настройками песочницы
+        const createIframe = (src, allowScripts, container, warningContainer) => {
+            // Удаляем блок с предупреждением
+            warningContainer.remove();
+
+            const iframe = document.createElement('iframe');
+            iframe.src = src;
+            iframe.loading = 'lazy';
+
+            if (allowScripts) {
+                iframe.sandbox = 'allow-scripts allow-same-origin allow-forms allow-popups';
+                iframe.title = 'Контент с разрешенными скриптами';
+            } else {
+                iframe.sandbox = 'allow-same-origin';
+                iframe.title = 'Контент в безопасном режиме';
+            }
+            container.appendChild(iframe);
+        };
+
+        // Отображение ошибки
+        const showError = (message, url) => {
+            const errorDiv = document.createElement('div');
+            errorDiv.className = 'error';
+            errorDiv.innerHTML = `
+        ${message}. Проверьте:
+        <ul>
+          <li>Корректность ссылки</li>
+          <li>Настройки CORS на сервере</li>
+          <li>Формат контента</li>
+          <li>Необходимость прокси (например, для ссылок из Discord)</li>
+        </ul>
+        <div>Видео находится по ссылке: <a href="${url}" target="_blank">клик</a></div>
+      `;
+            document.getElementById('player').appendChild(errorDiv);
+        };
+
+        // Инициализация всех обработчиков после загрузки DOM
+        document.addEventListener('DOMContentLoaded', () => {
+            // Обработка события вставки (paste)
+            document.addEventListener('paste', handlePaste);
+
+            const fileInput = document.getElementById('file-input');
+            const uploadButton = document.getElementById('upload-button');
+            const compressButton = document.getElementById('compress-button');
+
+            uploadButton.addEventListener('click', uploadFile);
+            compressButton.addEventListener('click', processUrl);
+
+            // Клик по блоку для загрузки файла – открывает диалог выбора
+            const uploadBox = document.querySelector('.upload-box');
+            uploadBox.addEventListener('click', () => fileInput.click());
+
+            // Drag & drop для блока загрузки
+            uploadBox.addEventListener('dragover', event => {
+                event.preventDefault();
+                uploadBox.style.borderColor = '#238636';
+            });
+            uploadBox.addEventListener('dragleave', () => {
+                uploadBox.style.borderColor = '#30363d';
+            });
+            uploadBox.addEventListener('drop', event => {
+                event.preventDefault();
+                uploadBox.style.borderColor = '#30363d';
+                fileInput.files = event.dataTransfer.files;
+            });
+
+            // Если в URL присутствует сжатая ссылка – отображаем медиа
+            const mediaUrl = getMediaUrl();
+            const inputSection = document.getElementById('input-section');
+            const playerContainer = document.getElementById('player');
+
+            if (mediaUrl) {
+                inputSection.style.display = 'none';
+                const mediaElement = createMediaElement(mediaUrl);
+                playerContainer.appendChild(mediaElement);
+            } else {
+                playerContainer.style.display = 'none';
+            }
+        });
     </script>
+</head>
+
+<body>
+    <header>
+        <nav>
+            <a href=".">Главная (назад)</a>
+            <a href="https://t.me/Uabraham">Связаться</a>
+        </nav>
+    </header>
+    <main class="container">
+        <section id="input-section">
+            <!-- Секция загрузки файлов -->
+            <section class="upload-section">
+                <h2>Вы можете загрузить файл на 1 час</h2>
+                <div class="upload-box">Перетащите файл сюда или кликните для выбора</div>
+                <input type="file" id="file-input">
+                <button id="upload-button">Загрузить файл</button>
+                <div id="upload-status" class="upload-status"></div>
+                <div id="loader" class="loader"></div>
+            </section>
+            <!-- Секция ввода ссылки -->
+            <section class="url-section">
+                <h3>Или используйте ссылку на уже существующий файл</h3>
+                <input type="text" id="url-input" placeholder="Введите ссылку на контент...">
+                <button id="compress-button">Сжать ссылку</button>
+                <div id="result"></div>
+            </section>
+        </section>
+        <!-- Секция для отображения медиа -->
+        <section id="player"></section>
+    </main>
 </body>
 
 </html>
