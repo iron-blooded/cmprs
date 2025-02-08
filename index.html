@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <link rel="icon" href="lain.png" type="image/png">
     <meta charset="UTF-8">
@@ -12,24 +13,26 @@
             margin: 0;
             padding: 20px;
             background-color: #0d1117;
-/*             min-height: 100vh; */
+            /*             min-height: 100vh; */
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
         }
 
-        #header{
+        #header {
             display: flex;
             flex-direction: row;
             justify-content: flex-start;
         }
 
-        #header>a{
+        #header>a {
             margin-right: 10px;
             border: 1px solid #30363d;
             border-radius: 6px;
             padding: 10px;
         }
 
-        #header>a, body, input[type="text"] {
+        #header>a,
+        body,
+        input[type="text"] {
             color: #c9d1d9;
             text-decoration: none;
         }
@@ -88,7 +91,10 @@
             flex-direction: column;
         }
 
-        video, audio, img, iframe {
+        video,
+        audio,
+        img,
+        iframe {
             max-width: 100%;
             max-height: 80vh;
             border: 1px solid #30363d;
@@ -157,10 +163,10 @@
             background-color: #da3633;
             color: white;
         }
-
     </style>
     <script src="https://cdn.jsdelivr.net/npm/lz-string@1.4.4/libs/lz-string.min.js"></script>
 </head>
+
 <body>
     <div id="header">
         <a href=".">Главная (назад)</a>
@@ -227,7 +233,7 @@
             try {
                 new URL(decompressed);
                 return decompressed;
-            } catch(e) {
+            } catch (e) {
                 showError('Некорректный URL после распаковки', url);
                 return null;
             }
@@ -341,7 +347,7 @@
 
             try {
                 new URL(url);
-            } catch(e) {
+            } catch (e) {
                 alert('Некорректный URL');
                 return;
             }
@@ -385,4 +391,5 @@
         }
     </script>
 </body>
+
 </html>
