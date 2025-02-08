@@ -409,12 +409,14 @@
                 const video = document.createElement('video');
                 video.controls = true;
                 video.src = url;
+                video.volume = 0.1
                 video.addEventListener('error', () => showError('Ошибка загрузки видео', url));
                 container.appendChild(video);
             } else if (mimeType.startsWith('audio/')) {
                 const audio = document.createElement('audio');
                 audio.controls = true;
                 audio.src = url;
+                audio.volume = 0.1
                 audio.textContent = 'Ваш браузер не поддерживает аудио тег.';
                 audio.addEventListener('error', () => showError('Ошибка загрузки аудио', url));
                 container.appendChild(audio);
