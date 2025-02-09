@@ -181,6 +181,7 @@
             margin: 10px 0;
             cursor: pointer;
             transition: border-color 0.3s;
+            text-align: center;
         }
 
         .upload-box:hover {
@@ -216,6 +217,11 @@
         h2 {
             margin-block-start: 0.1em;
             margin-block-end: 0.1em;
+        }
+
+        /* Cкрываем input для выбора файла */
+        #file-input {
+            display: none;
         }
     </style>
     <!-- Подключаем библиотеку для сжатия/распаковки URL -->
@@ -296,6 +302,7 @@
             const fileInput = document.getElementById('file-input');
             const status = document.getElementById('upload-status');
             const loader = document.getElementById('loader');
+            const uploadBox = document.querySelector('.upload-box');
 
             if (!fileInput.files[0]) {
                 status.textContent = '⚠️ Пожалуйста, выберите файл';
@@ -341,6 +348,8 @@
             } finally {
                 loader.style.display = 'none';
                 fileInput.value = '';
+                // Возвращаем изначальный текст в upload-box
+                uploadBox.textContent = 'Перетащите файл сюда или кликните для выбора';
             }
         };
 
@@ -348,10 +357,10 @@
         const displayResult = url => {
             const resultDiv = document.getElementById('result');
             resultDiv.innerHTML = `
-            <h3>Сжатая ссылка</h3>
-            <a href="${url}" target="_blank">${url}</a>
-            <button id="copy-btn" style="margin-left:10px">Копировать</button>
-          `;
+        <h3>Сжатая ссылка</h3>
+        <a href="${url}" target="_blank">${url}</a>
+        <button id="copy-btn" style="margin-left:10px">Копировать</button>
+      `;
             resultDiv.style.display = 'flex';
             document.getElementById('copy-btn').addEventListener('click', () => copyToClipboard(url));
         };
@@ -510,33 +519,42 @@
             const errorDiv = document.createElement('div');
             errorDiv.className = 'error';
             errorDiv.innerHTML = `
-            ${message}. Проверьте:
-            <ul>
-              <li>Корректность ссылки</li>
-              <li>Настройки CORS на сервере</li>
-              <li>Формат контента</li>
-              <li>Необходимость прокси (например, для ссылок из Discord)</li>
-            </ul>
-            <div>Контент находится по ссылке: <a href="${url}" target="_blank">клик</a></div>
-          `;
+        ${message}. Проверьте:
+        <ul>
+          <li>Корректность ссылки</li>
+          <li>Настройки CORS на сервере</li>
+          <li>Формат контента</li>
+          <li>Необходимость прокси (например, для ссылок из Discord)</li>
+        </ul>
+        <div>Контент находится по ссылке: <a href="${url}" target="_blank">клик</a></div>
+      `;
             document.getElementById('player').appendChild(errorDiv);
         };
 
-        // Инициализация всех обработчиков после загрузки DOM
+        // ★ Инициализация обработчиков после загрузки DOM ★
         document.addEventListener('DOMContentLoaded', () => {
             // Обработка события вставки (paste)
             document.addEventListener('paste', handlePaste);
 
             const fileInput = document.getElementById('file-input');
+            const uploadBox = document.querySelector('.upload-box');
             const uploadButton = document.getElementById('upload-button');
             const compressButton = document.getElementById('compress-button');
 
             uploadButton.addEventListener('click', uploadFile);
             compressButton.addEventListener('click', processUrl);
 
-            // Клик по блоку для загрузки файла – открывает диалог выбора
-            const uploadBox = document.querySelector('.upload-box');
+            // При клике по upload-box открывается диалог выбора файла
             uploadBox.addEventListener('click', () => fileInput.click());
+
+            // Добавляем обработчик изменения файла (выбор через диалог)
+            fileInput.addEventListener('change', () => {
+                if (fileInput.files && fileInput.files.length > 0) {
+                    uploadBox.textContent = fileInput.files[0].name;
+                } else {
+                    uploadBox.textContent = 'Перетащите файл сюда или кликните для выбора';
+                }
+            });
 
             // Drag & drop для блока загрузки
             uploadBox.addEventListener('dragover', event => {
@@ -550,6 +568,10 @@
                 event.preventDefault();
                 uploadBox.style.borderColor = '#30363d';
                 fileInput.files = event.dataTransfer.files;
+                // Обновляем текст upload-box после перетаскивания файла
+                if (fileInput.files && fileInput.files.length > 0) {
+                    uploadBox.textContent = fileInput.files[0].name;
+                }
             });
 
             // Если в URL присутствует сжатая ссылка – отображаем медиа
@@ -581,6 +603,7 @@
             <section class="upload-section">
                 <h2>Загрузите файл (срок хранения - 1 час)</h2>
                 <div class="upload-box">Перетащите файл сюда или кликните для выбора</div>
+                <!-- Скрытый input – он будет вызываться программно ★ -->
                 <input type="file" id="file-input">
                 <button id="upload-button">Загрузить файл</button>
                 <div id="upload-status" class="upload-status"></div>
